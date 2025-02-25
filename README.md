@@ -14,6 +14,7 @@ cargo run
 ```sh
 # generating a random name with 2 consonants, a vowel, and one consonant
 cargo run -- cvcv
-# formating output, this will output 'h' followed by a space, then the next two random characters in the generated random name.
+
+# formatting output, this will output 'h' followed by a space, then the next two random characters in the generated random name.
 cargo run -- cvcv "h .."
 ```
