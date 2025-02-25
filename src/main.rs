@@ -4,7 +4,6 @@ use rand::random;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let mut fixed_letters = String::new();
 
     if args.len() >= 2 {
         // print help information
@@ -12,11 +11,8 @@ fn main() {
             || args[1] == "--help"
             || (!args[1].contains("c") && !args[1].contains("v"))
         {
-            println!("Usage: cargo run -- <format_string>\nOR (for a binary build of the program)\nrandom_name <format_string>\n\nHow to format:\n\t[c] - A 'c' in the format string represents a consonant to be in this position.\n\t[v] - A 'v' in the format string represents a vowel to be in this position.\nNote: inputting no string will result in the default string \"ccvccvc\" being used.");
+            println!("Usage: cargo run -- <format_string> [modification_string]\nOR (for a binary build of the program)\nrandom_name <format_string>\n\nHow to format:\n\t[c] - A 'c' in the format string represents a consonant to be in this position.\n\t[v] - A 'v' in the format string represents a vowel to be in this position.\nNote: inputting no string will result in the default string \"ccvccvc\" being used.\n\nThe final argument is optional and allows for modification of the generated name.\n\t'*' - append the whole random name to this position.\n\t'.' - Display next character in random name.\n\tAll other characters will be displayed at the location specified.");
             std::process::exit(1);
-        }
-        if args.len() >= 3 {
-            fixed_letters = args[2].clone();
         }
     }
 
@@ -31,32 +27,38 @@ fn main() {
         }
     };
 
+    let output_modifications = if args.len() >= 3 {
+        Some(args[2].clone())
+    } else {
+        None
+    };
+
     let generated_string = generate_name_string(&the_string);
     // only print if a string was actually generated
     if !generated_string.is_empty() {
-        if fixed_letters.is_empty() {
-            println!("{}", generated_string);
-        } else {
-            let mut final_string = String::new();
+        let mut final_string = String::new();
+        if let Some(string_mods) = output_modifications {
             let mut gen_chars = generated_string.chars();
 
-            for ch in fixed_letters.chars() {
-                if ch.is_alphabetic() {
-                    final_string.push(ch);
-                } else if ch == ' ' {
-                    final_string.push(' ');
+            for cur_char in string_mods.chars() {
+                if cur_char == '.' {
+                    // any character
                     if let Some(gen_ch) = gen_chars.next() {
                         final_string.push(gen_ch);
                     }
-                } else if ch == '.' {
-                    if let Some(gen_ch) = gen_chars.next() {
-                        final_string.push(gen_ch);
-                    }
+                } else if cur_char == '*' {
+                    final_string = format!("{}{}", final_string, gen_chars.as_str());
+                } else {
+                    // didn't match with anything, just push the next character
+                    final_string.push(cur_char);
                 }
             }
-
-            println!("{}", final_string);
+        } else {
+            // just print the generated string
+            final_string = generated_string;
         }
+
+        println!("{}", final_string);
     }
 }
 
